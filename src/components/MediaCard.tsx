@@ -3,17 +3,16 @@
 import { useState } from "react";
 import { MediaItem } from "./Gallery";
 import { Button } from "./ui/button";
-import { Play, Trash2, Calendar, FileImage, Video } from "lucide-react";
+import { Play, Calendar, FileImage, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MediaCardProps {
   item: MediaItem;
   viewMode: "grid" | "list";
   onClick: () => void;
-  onDelete: () => void;
 }
 
-export function MediaCard({ item, viewMode, onClick, onDelete }: MediaCardProps) {
+export function MediaCard({ item, viewMode, onClick }: MediaCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -87,17 +86,6 @@ export function MediaCard({ item, viewMode, onClick, onDelete }: MediaCardProps)
           <Button size="sm" variant="outline" onClick={onClick}>
             View
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="text-red-600 hover:text-red-700 hover:border-red-300"
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
         </div>
       </div>
     );
@@ -146,18 +134,7 @@ export function MediaCard({ item, viewMode, onClick, onDelete }: MediaCardProps)
           </div>
         )}
 
-        {/* Delete Button */}
-        <Button
-          size="sm"
-          variant="destructive"
-          className="absolute top-2 right-2 w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+
 
         {/* Type Badge */}
         <div className="absolute top-2 left-2">

@@ -6,11 +6,12 @@ import { Upload, X, FileImage, Video, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface UploadAreaProps {
-  onUpload: (files: File[]) => void;
+  onUpload: (files: File[]) => Promise<void>;
   onCancel: () => void;
+  uploading?: boolean;
 }
 
-export function UploadArea({ onUpload, onCancel }: UploadAreaProps) {
+export function UploadArea({ onUpload, onCancel, uploading = false }: UploadAreaProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
@@ -44,9 +45,9 @@ export function UploadArea({ onUpload, onCancel }: UploadAreaProps) {
     }
   }, []);
 
-  const handleUpload = useCallback(() => {
+  const handleUpload = useCallback(async () => {
     if (selectedFiles.length > 0) {
-      onUpload(selectedFiles);
+      await onUpload(selectedFiles);
       setSelectedFiles([]);
     }
   }, [selectedFiles, onUpload]);
@@ -75,35 +76,51 @@ export function UploadArea({ onUpload, onCancel }: UploadAreaProps) {
       <div
         className={cn(
           "relative rounded-lg border-2 border-dashed p-12 text-center transition-all duration-300",
-          isDragOver
+          uploading
+            ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20 cursor-not-allowed"
+            : isDragOver
             ? "border-violet-400 bg-violet-50 dark:bg-violet-950/20"
             : "border-slate-300 dark:border-slate-600 hover:border-violet-300 dark:hover:border-violet-600"
         )}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDrop={uploading ? undefined : handleDrop}
+        onDragOver={uploading ? undefined : handleDragOver}
+        onDragLeave={uploading ? undefined : handleDragLeave}
       >
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/50 dark:to-indigo-900/50 flex items-center justify-center">
-          <Upload className="w-8 h-8 text-violet-600 dark:text-violet-400" />
+        <div className={cn(
+          "w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center",
+          uploading
+            ? "bg-gradient-to-br from-blue-100 to-sky-100 dark:from-blue-900/50 dark:to-sky-900/50"
+            : "bg-gradient-to-br from-violet-100 to-indigo-100 dark:from-violet-900/50 dark:to-indigo-900/50"
+        )}>
+          <Upload className={cn(
+            "w-8 h-8",
+            uploading
+              ? "text-blue-600 dark:text-blue-400 animate-bounce"
+              : "text-violet-600 dark:text-violet-400"
+          )} />
         </div>
         
         <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
-          Drop files here
+          {uploading ? "Uploading files..." : "Drop files here"}
         </h3>
         <p className="text-slate-500 dark:text-slate-400 mb-4">
-          Or click to select images and videos
+          {uploading ? "Please wait while files are being uploaded" : "Or click to select images and videos"}
         </p>
         
         <input
           type="file"
           multiple
           accept="image/*,video/*"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          onChange={handleFileSelect}
+          className={cn(
+            "absolute inset-0 w-full h-full opacity-0",
+            uploading ? "cursor-not-allowed" : "cursor-pointer"
+          )}
+          onChange={uploading ? undefined : handleFileSelect}
+          disabled={uploading}
         />
         
-        <Button variant="outline" className="pointer-events-none">
-          Choose Files
+        <Button variant="outline" className="pointer-events-none" disabled={uploading}>
+          {uploading ? "Uploading..." : "Choose Files"}
         </Button>
       </div>
 
@@ -146,15 +163,24 @@ export function UploadArea({ onUpload, onCancel }: UploadAreaProps) {
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="outline" onClick={onCancel} disabled={uploading}>
           Cancel
         </Button>
         <Button
           onClick={handleUpload}
-          disabled={selectedFiles.length === 0}
-          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+          disabled={selectedFiles.length === 0 || uploading}
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50"
         >
-          Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
+          {uploading ? (
+            <>
+              <Upload className="w-4 h-4 mr-2 animate-bounce" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
+            </>
+          )}
         </Button>
       </div>
     </div>

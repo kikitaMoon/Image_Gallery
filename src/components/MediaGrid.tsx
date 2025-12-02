@@ -7,10 +7,9 @@ interface MediaGridProps {
   media: MediaItem[];
   viewMode: "grid" | "list";
   onItemClick: (item: MediaItem) => void;
-  onItemDelete: (id: string) => void;
 }
 
-export function MediaGrid({ media, viewMode, onItemClick, onItemDelete }: MediaGridProps) {
+export function MediaGrid({ media, viewMode, onItemClick }: MediaGridProps) {
   if (media.length === 0) {
     return (
       <div className="text-center py-16">
@@ -57,7 +56,6 @@ export function MediaGrid({ media, viewMode, onItemClick, onItemDelete }: MediaG
             item={item}
             viewMode={viewMode}
             onClick={() => onItemClick(item)}
-            onDelete={() => onItemDelete(item.id)}
           />
         </div>
       ))}

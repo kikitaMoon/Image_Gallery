@@ -3,6 +3,15 @@ const nextConfig = {
   // Use different output dir ONLY for local production builds
   distDir: process.env.BUILD_DIR || '.next',
   
+  async rewrites() {
+    return [
+      {
+        source: '/resources/:path*',
+        destination: '/api/resources/:path*'
+      }
+    ]
+  },
+  
   images: {
     unoptimized: true,
     domains: [

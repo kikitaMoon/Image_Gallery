@@ -1,0 +1,42 @@
+[
+  {
+    "id": "yophFJcuqgT-htk4YqSUv",
+    "type": "image",
+    "src": "/uploads/yophFJcuqgT-htk4YqSUv.png",
+    "title": "VisualAnalysis3",
+    "description": "Uploaded image",
+    "createdAt": "2025-11-28T07:24:47.858Z",
+    "size": 1096152,
+    "originalName": "VisualAnalysis3.png"
+  },
+  {
+    "id": "demo-1",
+    "type": "image",
+    "src": "/demo-1.png",
+    "title": "Dashboard Analytics",
+    "description": "Modern dashboard with analytics and data visualization",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "size": 0,
+    "originalName": "demo-1.png"
+  },
+  {
+    "id": "demo-2",
+    "type": "image",
+    "src": "/demo-2.png",
+    "title": "Mobile E-commerce App",
+    "description": "Clean mobile shopping interface design",
+    "createdAt": "2024-01-16T00:00:00.000Z",
+    "size": 0,
+    "originalName": "demo-2.png"
+  },
+  {
+    "id": "demo-video",
+    "type": "video",
+    "src": "/demo-video.mp4",
+    "title": "App Demo Video",
+    "description": "Interactive demonstration of web application features",
+    "createdAt": "2024-01-18T00:00:00.000Z",
+    "size": 0,
+    "originalName": "demo-video.mp4"
+  }
+]

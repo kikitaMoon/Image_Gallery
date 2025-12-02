@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { MediaGrid } from "./MediaGrid";
-import { UploadArea } from "./UploadArea";
 import { Lightbox } from "./Lightbox";
 import { Button } from "./ui/button";
-import { Upload, Grid, List } from "lucide-react";
+import { Grid, List, RefreshCw } from "lucide-react";
 
 export interface MediaItem {
   id: string;
@@ -14,71 +13,45 @@ export interface MediaItem {
   thumbnail?: string;
   title: string;
   description?: string;
-  createdAt: Date;
+  createdAt: Date | string;
+  size?: number;
+  originalName?: string;
 }
 
-// Demo data
-const initialMedia: MediaItem[] = [
-  {
-    id: "1",
-    type: "image",
-    src: "/demo-1.png",
-    title: "Dashboard Analytics",
-    description: "Modern dashboard with analytics and data visualization",
-    createdAt: new Date("2024-01-15"),
-  },
-  {
-    id: "2",
-    type: "image",
-    src: "/demo-2.png",
-    title: "Mobile E-commerce App",
-    description: "Clean mobile shopping interface design",
-    createdAt: new Date("2024-01-16"),
-  },
-  {
-    id: "3",
-    type: "image",
-    src: "/demo-3.png",
-    title: "Creative Agency Website",
-    description: "Bold and vibrant landing page design",
-    createdAt: new Date("2024-01-17"),
-  },
-  {
-    id: "4",
-    type: "video",
-    src: "/demo-video.mp4",
-    title: "App Demo Video",
-    description: "Interactive demonstration of web application features",
-    createdAt: new Date("2024-01-18"),
-  },
-];
-
 export function Gallery() {
-  const [media, setMedia] = useState<MediaItem[]>(initialMedia);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showUpload, setShowUpload] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleUpload = useCallback((files: File[]) => {
-    const newItems: MediaItem[] = files.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      type: file.type.startsWith("image") ? "image" : "video",
-      src: URL.createObjectURL(file),
-      title: file.name,
-      description: `Uploaded ${file.type.startsWith("image") ? "image" : "video"}`,
-      createdAt: new Date(),
-    }));
-
-    setMedia((prev) => [...newItems, ...prev]);
-    setShowUpload(false);
+  // Fetch media from API
+  const fetchMedia = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/media");
+      const data = await response.json();
+      
+      if (data.success) {
+        // Convert string dates back to Date objects
+        const mediaWithDates = data.media.map((item: MediaItem) => ({
+          ...item,
+          createdAt: new Date(item.createdAt),
+        }));
+        setMedia(mediaWithDates);
+      }
+    } catch (error) {
+      console.error("Error fetching media:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleDelete = useCallback((id: string) => {
-    setMedia((prev) => prev.filter((item) => item.id !== id));
-    if (selectedItem?.id === id) {
-      setSelectedItem(null);
-    }
-  }, [selectedItem]);
+  // Load media on component mount
+  useEffect(() => {
+    fetchMedia();
+  }, [fetchMedia]);
+
+  // No upload/delete functionality - files managed via server filesystem
 
   return (
     <div className="space-y-6">
@@ -89,6 +62,7 @@ export function Gallery() {
             variant={viewMode === "grid" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("grid")}
+            disabled={loading}
           >
             <Grid className="w-4 h-4 mr-2" />
             Grid
@@ -97,6 +71,7 @@ export function Gallery() {
             variant={viewMode === "list" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("list")}
+            disabled={loading}
           >
             <List className="w-4 h-4 mr-2" />
             List
@@ -104,27 +79,22 @@ export function Gallery() {
         </div>
         
         <Button
-          onClick={() => setShowUpload(!showUpload)}
-          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+          variant="outline"
+          size="sm"
+          onClick={fetchMedia}
+          disabled={loading}
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-none"
         >
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Media
+          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          Refresh Gallery
         </Button>
       </div>
-
-      {/* Upload Area */}
-      {showUpload && (
-        <div className="animate-in slide-in-from-top-2 duration-300">
-          <UploadArea onUpload={handleUpload} onCancel={() => setShowUpload(false)} />
-        </div>
-      )}
 
       {/* Media Grid */}
       <MediaGrid
         media={media}
         viewMode={viewMode}
         onItemClick={setSelectedItem}
-        onItemDelete={handleDelete}
       />
 
       {/* Lightbox */}
@@ -148,6 +118,8 @@ export function Gallery() {
       {/* Stats */}
       <div className="text-center text-sm text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 rounded-full px-6 py-2 backdrop-blur-sm border border-slate-200 dark:border-slate-700 inline-block">
         {media.length} items in gallery • {media.filter(m => m.type === "image").length} images • {media.filter(m => m.type === "video").length} videos
+        <br />
+        <span className="text-xs opacity-75">Managed via: ../demo-gallery-deployment/resources/</span>
       </div>
     </div>
   );
